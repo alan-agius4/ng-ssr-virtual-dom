@@ -65,7 +65,6 @@ app.listen(PORT, () => {
  
  @NgModule({
    declarations: [
-@@ -14,7 +13,6 @@ import { SSRBrowserModule } from '@ngssr/browser';
      BrowserModule,
      AppRoutingModule,
      BrowserAnimationsModule,
