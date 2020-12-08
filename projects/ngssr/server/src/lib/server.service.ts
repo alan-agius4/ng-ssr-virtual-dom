@@ -1,5 +1,4 @@
 
-import { rejects } from 'assert';
 import { JSDOM } from 'jsdom';
 import { join, posix } from 'path';
 import { CustomResourceLoader } from './custom-resource-loader';
