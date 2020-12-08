@@ -23,7 +23,7 @@ yarn app-shell // App-shell generation
 
 Changes in your application
 
-**server.js**
+**/projects/demo/server.js**
 ```js
 const express = require('express');
 const { SSRService } = require('@ngssr/server');
