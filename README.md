@@ -23,7 +23,7 @@ yarn app-shell // App-shell generation
 
 ## Changes in your application
 
-**/projects/demo/server.js**
+### projects/demo/server.js
 ```js
 const express = require('express');
 const { SSRService } = require('@ngssr/server');
@@ -56,7 +56,7 @@ app.listen(PORT, () => {
 });
 ```
 
-**/projects/demo/src/app/app.module.ts**
+### projects/demo/src/app/app.module.ts
 ```diff
  import { BrowserModule } from '@angular/platform-browser';
  import { AppRoutingModule } from './app-routing.module';
