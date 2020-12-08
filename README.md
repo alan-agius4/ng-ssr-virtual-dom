@@ -22,7 +22,7 @@ yarn ssr
 
 Changes in your application
 
-**server.js+*
+**server.js**
 ```js
 const express = require('express');
 const { SSRService } = require('@ngssr/server');
