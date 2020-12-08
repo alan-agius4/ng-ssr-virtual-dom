@@ -1,6 +1,6 @@
 # Angular SSR Virtual Dom
 
-POC of Angular SSR with vitual JavaScript DOM.
+POC of Angular SSR with virtual JavaScript DOM.
 
 - What if Angular SSR didn't require the complex `@nguniversal` and `@angular/platform-server` package?
 - What if we `Window is undefined` error was a thing of the past?
