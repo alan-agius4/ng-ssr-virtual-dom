@@ -18,7 +18,7 @@ const ssr = new SSRService({
 app.get('*', (req, res) => {
   ssr.render({
     urlPath: req.originalUrl,
-    // Likely we should provide all hearders.
+    // Likely we should provide all headers.
     referrer: req.header('Referer')
   })
   .then(html => res.send(html));
