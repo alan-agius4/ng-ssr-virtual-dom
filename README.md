@@ -7,13 +7,13 @@ POC for Angular SSR with virtual JavaScript DOM.
 - What if you don't need multiple builds for an SSR/prerender application?
 - What if an application shell can be generated without an extra build?
 
-Problems to solve:
+## Problems to solve:
 
 - [x] Application stablization
 - [ ] State transfer
 - [ ] Advanced use cases
 
-Try it out
+## Try it out
 ```
 yarn
 yarn build
@@ -21,7 +21,7 @@ yarn ssr // SSR application
 yarn app-shell // App-shell generation
 ```
 
-Changes in your application
+## Changes in your application
 
 **/projects/demo/server.js**
 ```js
