@@ -1,0 +1,13 @@
+diff --git a/node_modules/ng-packagr/lib/ng-package/entry-point/write-bundles.transform.js b/node_modules/ng-packagr/lib/ng-package/entry-point/write-bundles.transform.js
+index b9afd97..7853b68 100644
+--- a/node_modules/ng-packagr/lib/ng-package/entry-point/write-bundles.transform.js
++++ b/node_modules/ng-packagr/lib/ng-package/entry-point/write-bundles.transform.js
+@@ -44,7 +44,7 @@ exports.writeBundlesTransform = transform_1.transformFromPromise((graph) => __aw
+         cache.rollupFESMCache = yield rollup_1.rollupBundleFile(Object.assign(Object.assign({}, opts), { moduleName: ngEntryPoint.moduleId, format: 'es', dest: fesm2015, cache: cache.rollupFESMCache }));
+         spinner.succeed();
+         spinner.start('Bundling to UMD');
+-        cache.rollupUMDCache = yield rollup_1.rollupBundleFile(Object.assign(Object.assign({}, opts), { moduleName: ngEntryPoint.umdId, entry: esm2015, format: 'umd', dest: umd, cache: cache.rollupUMDCache, transform: downlevel_plugin_1.downlevelCodeWithTsc }));
++        cache.rollupUMDCache = yield rollup_1.rollupBundleFile(Object.assign(Object.assign({}, opts), { moduleName: ngEntryPoint.umdId, entry: esm2015, format: 'umd', dest: umd, cache: cache.rollupUMDCache }));
+         spinner.succeed();
+         spinner.start('Minifying UMD bundle');
+         yield uglify_1.minifyJsFile(umd, umdMinified);

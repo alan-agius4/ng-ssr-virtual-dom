@@ -2,6 +2,16 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "paths": {
+      "@ngssr/browser": [
+        "dist/ngssr/browser/ngssr-browser",
+        "dist/ngssr/browser"
+      ],
+      "@ngssr/server": [
+        "dist/ngssr/server/ngssr-server",
+        "dist/ngssr/server"
+      ]
+    },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,

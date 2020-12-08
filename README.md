@@ -1,27 +1,76 @@
-# SsrVirtualDom
+# Angular SSR Virtual Dom
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.0-next.0.
+POC of Angular SSR with vitual DOM.
 
-## Development server
+- What if Angular SSR didn't require the complex `@nguniversal` and `@angular/platform-server` package?
+- What if we `Window is undefined` error was a thing of the past?
+- What if you don't need multiple builds for an SSR'd application?
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
 
-## Code scaffolding
+Problems to solve:
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- [x] Application stablization
+- [ ] State transfer
+- [ ] Advanced use cases
 
-## Build
+Try it out
+```
+yarn
+yarn build
+yarn ssr
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Changes in your application
 
-## Running unit tests
+**server.js+*
+```js
+const express = require('express');
+const { SSRService } = require('@ngssr/server');
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+const PORT = 8080;
+const DIST = './dist/demo/';
 
-## Running end-to-end tests
+const app = express();
+app.set('views', DIST);
+app.get('*.*', express.static(DIST, {
+  maxAge: '1y'
+}));
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+const ssr = new SSRService({
+  baseUrl: 'http://localhost:8080',
+  publicPath: DIST,
+});
 
-## Further help
+app.get('*', (req, res) => {
+  ssr.render({
+    urlPath: req.originalUrl,
+    // Likely we should provide all hearders.
+    referrer: req.header('Referer')
+  })
+  .then(html => res.send(html));
+});
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+app.listen(PORT, () => {
+  console.log(`Node Express server listening on http://localhost:${PORT}`);
+});
+```
+
+**/projects/demo/src/app/app.module.ts**
+```diff
+ import { BrowserModule } from '@angular/platform-browser';
+ import { AppRoutingModule } from './app-routing.module';
+ import { AppComponent } from './app.component';
+ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
++import { SSRBrowserModule } from '@ngssr/browser';
+ 
+ @NgModule({
+   declarations: [
+@@ -14,7 +13,6 @@ import { SSRBrowserModule } from '@ngssr/browser';
+     BrowserModule,
+     AppRoutingModule,
+     BrowserAnimationsModule,
++    SSRBrowserModule,
+   ],
+   providers: [],
+   bootstrap: [AppComponent]
+```
