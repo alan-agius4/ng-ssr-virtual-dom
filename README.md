@@ -17,7 +17,8 @@ Try it out
 ```
 yarn
 yarn build
-yarn ssr
+yarn ssr // SSR application
+yarn app-shell // App-shell generation
 ```
 
 Changes in your application
