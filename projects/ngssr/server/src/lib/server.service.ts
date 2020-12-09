@@ -37,10 +37,7 @@ export class SSRService {
         const interval = setInterval(() => {
           const isStable = dom.window
             .getAllAngularTestabilities()
-            .every((app: any) => {
-              console.log(app.isStable());
-              return app.isStable();
-            });
+            .every((app: any) => app.isStable());
 
           if (isStable) {
             // Wait until up is stable or limit reached

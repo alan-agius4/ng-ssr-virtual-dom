@@ -55,22 +55,3 @@ app.listen(PORT, () => {
   console.log(`Node Express server listening on http://localhost:${PORT}`);
 });
 ```
-
-### projects/demo/src/app/app.module.ts
-```diff
- import { BrowserModule } from '@angular/platform-browser';
- import { AppRoutingModule } from './app-routing.module';
- import { AppComponent } from './app.component';
- import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-+import { SSRBrowserModule } from '@ngssr/browser';
- 
- @NgModule({
-   declarations: [
-     BrowserModule,
-     AppRoutingModule,
-     BrowserAnimationsModule,
-+    SSRBrowserModule,
-   ],
-   providers: [],
-   bootstrap: [AppComponent]
-```
