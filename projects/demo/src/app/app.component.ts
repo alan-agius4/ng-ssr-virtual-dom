@@ -6,9 +6,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'SSR';
+  title = 'SSR Testing';
 
   constructor() {
-    setTimeout(() => this.title = 'SSR Demo', 1000);
+    // setTimeout(() => this.title = 'SSR Demo', 1000);
   }
 }

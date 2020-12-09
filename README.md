@@ -1,19 +1,19 @@
 # Angular SSR Virtual Dom
 
-POC of Angular SSR with vitual JavaScript DOM.
+POC for Angular SSR with virtual JavaScript DOM.
 
-- What if Angular SSR didn't require the complex `@nguniversal` and `@angular/platform-server` package?
+- What if Angular SSR didn't require the complex `@nguniversal` and `@angular/platform-server` packages setup?
 - What if we `Window is undefined` error was a thing of the past?
-- What if you don't need multiple builds for an SSR'd application?
+- What if you don't need multiple builds for an SSR/prerender application?
 - What if an application shell can be generated without an extra build?
 
-Problems to solve:
+## Problems to solve:
 
 - [x] Application stablization
 - [ ] State transfer
 - [ ] Advanced use cases
 
-Try it out
+## Try it out
 ```
 yarn
 yarn build
@@ -21,9 +21,9 @@ yarn ssr // SSR application
 yarn app-shell // App-shell generation
 ```
 
-Changes in your application
+## Changes in your application
 
-**server.js**
+### projects/demo/server.js
 ```js
 const express = require('express');
 const { SSRService } = require('@ngssr/server');
@@ -45,7 +45,7 @@ const ssr = new SSRService({
 app.get('*', (req, res) => {
   ssr.render({
     urlPath: req.originalUrl,
-    // Likely we should provide all hearders.
+    // Likely we should provide all headers.
     referrer: req.header('Referer')
   })
   .then(html => res.send(html));
@@ -56,7 +56,7 @@ app.listen(PORT, () => {
 });
 ```
 
-**/projects/demo/src/app/app.module.ts**
+### projects/demo/src/app/app.module.ts
 ```diff
  import { BrowserModule } from '@angular/platform-browser';
  import { AppRoutingModule } from './app-routing.module';

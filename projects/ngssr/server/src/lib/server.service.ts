@@ -1,3 +1,5 @@
+
+
 import { JSDOM } from 'jsdom';
 import { join, posix } from 'path';
 import { CustomResourceLoader } from './custom-resource-loader';
@@ -31,23 +33,23 @@ export class SSRService {
     });
 
     return new Promise<string>((resolve, reject) => {
-      let count = 0;
       dom.window.document.addEventListener('DOMContentLoaded', () => {
         const interval = setInterval(() => {
-          if (dom.window.ngIsStable) {
+          const isStable = dom.window
+            .getAllAngularTestabilities()
+            .every((app: any) => {
+              console.log(app.isStable());
+              return app.isStable();
+            });
+
+          if (isStable) {
             // Wait until up is stable or limit reached
             clearInterval(interval);
             resolve(dom.window.document.documentElement.outerHTML);
 
             return;
           }
-
-          if (count === 500) {
-            reject(new Error(`Application didn't stabilize in time.`));
-          }
-
-          count++;
-        }, 40);
+        }, 50);
       });
     });
   }
