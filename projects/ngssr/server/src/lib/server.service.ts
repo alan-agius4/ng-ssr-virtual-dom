@@ -39,7 +39,7 @@ export class SSRService {
           if (isStable) {
             // Wait until up is stable or limit reached
             clearInterval(interval);
-            resolve(dom.window.document.documentElement.outerHTML);
+            resolve(dom.serialize());
 
             return;
           }
