@@ -1,14 +1,10 @@
-
-
 import { JSDOM } from 'jsdom';
 import { join, posix } from 'path';
 import { CustomResourceLoader } from './custom-resource-loader';
-
 export interface RenderOptions {
   referrer?: string;
   urlPath: string;
 }
-
 
 export interface ServiceOptions {
   htmlFilePath?: string;

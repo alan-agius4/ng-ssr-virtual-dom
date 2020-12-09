@@ -2,4 +2,4 @@
  * Public API Surface of server
  */
 
-export * from './lib/server.service';
+export { ServiceOptions, RenderOptions, SSRService } from './lib/server.service';
