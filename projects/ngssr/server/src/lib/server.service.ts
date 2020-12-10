@@ -1,3 +1,4 @@
+import Critters from 'critters';
 import { JSDOM } from 'jsdom';
 import { join, posix } from 'path';
 import { CustomResourceLoader } from './custom-resource-loader';
@@ -5,6 +6,7 @@ import { CustomResourceLoader } from './custom-resource-loader';
 export interface RenderOptions {
   referrer?: string;
   urlPath: string;
+  inlineCriticalCss?: boolean;
 }
 
 export interface ServiceOptions {
@@ -15,9 +17,20 @@ export interface ServiceOptions {
 
 export class SSRService {
   private readonly customResourceLoader: CustomResourceLoader;
+  private readonly critters: Critters;
 
   constructor(private readonly options: ServiceOptions) {
     this.customResourceLoader = new CustomResourceLoader(this.options.baseUrl, this.options.publicPath);
+    this.critters = new Critters({
+      path: this.options.publicPath,
+      publicPath: this.options.baseUrl,
+      compress: true,
+      pruneSource: false,
+      reduceInlineStyles: false,
+      mergeStylesheets: false,
+      preload: 'media',
+      noscriptFallback: true,
+    })
   }
 
   async render(options: RenderOptions): Promise<string> {
@@ -39,9 +52,13 @@ export class SSRService {
           if (isStable) {
             // Wait until up is stable or limit reached
             clearInterval(interval);
-            resolve(dom.serialize());
+            let content = dom.serialize();
 
-            return;
+            if (options.inlineCriticalCss === false) {
+              resolve(content);
+            } else {
+              this.critters.process(content).then(resolve);
+            }
           }
         }, 50);
       });
