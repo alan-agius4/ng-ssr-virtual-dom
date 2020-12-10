@@ -52,7 +52,7 @@ export class SSRService {
           if (isStable) {
             // Wait until up is stable or limit reached
             clearInterval(interval);
-            let content = dom.serialize();
+            const content = dom.serialize();
 
             if (options.inlineCriticalCss === false) {
               resolve(content);
