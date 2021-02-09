@@ -54,6 +54,10 @@ export class SSRService {
           if (isStable) {
             // Wait until up is stable or limit reached
             clearInterval(interval);
+
+            // Add Angular state
+            dom.window.ngVirtualDomRenderMode.addStateToDom();
+
             const content = dom.serialize();
 
             if (options.inlineCriticalCss === false) {

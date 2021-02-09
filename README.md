@@ -11,7 +11,7 @@ POC for Angular SSR with virtual JavaScript DOM.
 
 - [x] Application stablization
 - [x] Inline critical CSS
-- [ ] State transfer
+- [x] State transfer
 - [x] Clean up `<style>` tags
 - [ ] Advanced use cases
 
