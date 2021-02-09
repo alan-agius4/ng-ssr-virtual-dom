@@ -1078,6 +1078,12 @@
     merge-source-map "^1.1.0"
     schema-utils "^2.7.0"
 
+"@ngssr/server@file:dist/ngssr/server":
+  version "0.0.1"
+  dependencies:
+    jsdom "^16.4.0"
+    tslib "^2.0.0"
+
 "@ngtools/webpack@11.1.0-next.1":
   version "11.1.0-next.1"
   resolved "https://registry.yarnpkg.com/@ngtools/webpack/-/webpack-11.1.0-next.1.tgz#535baaf74bec0c70b128257a8c68b61701918fb3"

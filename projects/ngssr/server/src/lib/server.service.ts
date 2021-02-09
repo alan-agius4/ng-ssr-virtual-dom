@@ -42,6 +42,8 @@ export class SSRService {
       referrer: options.referrer,
     });
 
+    dom.window.eval(`ngVirtualDomRenderMode = true;`);
+
     return new Promise<string>((resolve, reject) => {
       dom.window.document.addEventListener('DOMContentLoaded', () => {
         const interval = setInterval(() => {

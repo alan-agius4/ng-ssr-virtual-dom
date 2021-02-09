@@ -4,5 +4,10 @@
   "dependencies": {
     "tslib": "^2.0.0",
     "jsdom": "^16.4.0"
+  },
+  "peerDependencies": {
+    "@angular/core": "^11.0.0",
+    "@angular/common": "^11.0.0",
+    "@angular/platform-browser": "^11.0.0"
   }
 }
