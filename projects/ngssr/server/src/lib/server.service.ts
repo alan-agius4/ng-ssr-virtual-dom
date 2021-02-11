@@ -1,6 +1,7 @@
 import Critters from 'critters';
 import { JSDOM } from 'jsdom';
 import { join, posix } from 'path';
+import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server/browser';
 import { CustomResourceLoader } from './custom-resource-loader';
 
 export interface RenderOptions {
@@ -40,34 +41,38 @@ export class SSRService {
       resources: this.customResourceLoader,
       url: posix.join(this.options.baseUrl, options.urlPath),
       referrer: options.referrer,
+      beforeParse: window => {
+        window.ngVirtualDomRenderMode = true
+      },
     });
 
-    dom.window.eval(`ngVirtualDomRenderMode = true;`);
-
-    return new Promise<string>((resolve, reject) => {
+    const ngVirtualDomRenderMode = await new Promise<NgVirtualDomRenderModeAPI>(resolve => {
       dom.window.document.addEventListener('DOMContentLoaded', () => {
         const interval = setInterval(() => {
-          const isStable = dom.window
-            .getAllAngularTestabilities()
-            .every((app: any) => app.isStable());
-
-          if (isStable) {
-            // Wait until up is stable or limit reached
+          const ngVirtualDomRenderMode = dom.window.ngVirtualDomRenderMode as NgVirtualDomRenderMode;
+          if (ngVirtualDomRenderMode && typeof ngVirtualDomRenderMode === 'object') {
+            // Wait until up is stable or limit reached.
             clearInterval(interval);
-
-            // Add Angular state
-            dom.window.ngVirtualDomRenderMode.addStateToDom();
-
-            const content = dom.serialize();
-
-            if (options.inlineCriticalCss === false) {
-              resolve(content);
-            } else {
-              this.critters.process(content).then(resolve);
-            }
+            resolve(ngVirtualDomRenderMode);
           }
         }, 50);
       });
     });
+
+    await ngVirtualDomRenderMode.getWhenStable();
+
+    // Add Angular state
+    const doc = dom.window.document;
+    const script = doc.createElement('script');
+    script.id = `${ngVirtualDomRenderMode.appId}-state`;
+    script.setAttribute('type', 'application/json');
+    script.textContent = ngVirtualDomRenderMode.getSerializedState();
+    doc.body.appendChild(script);
+
+    const content = dom.serialize();
+
+    return options.inlineCriticalCss === false
+      ? content
+      : this.critters.process(content);
   }
 }

@@ -1,12 +1,20 @@
 import { DOCUMENT, ɵPLATFORM_SERVER_ID as PLATFORM_SERVER_ID } from '@angular/common';
-import { APP_ID, APP_INITIALIZER, ModuleWithProviders, NgModule, PLATFORM_ID } from '@angular/core';
+import { ApplicationRef, APP_ID, APP_INITIALIZER, Inject, ModuleWithProviders, NgModule, Optional, PLATFORM_ID, PLATFORM_INITIALIZER } from '@angular/core';
 import {
   ɵSharedStylesHost as SharedStylesHost, ɵescapeHtml as escapeHtml,
   ɵDomSharedStylesHost as DomSharedStylesHost, BrowserModule, TransferState
 } from '@angular/platform-browser';
 import { SSRStylesHost } from './styles_host';
+import { filter, mapTo, take } from 'rxjs/operators';
+export interface NgVirtualDomRenderModeAPI {
+  getSerializedState: () => string,
+  getWhenStable: () => Promise<void>,
+  appId?: string,
+}
 
-declare let ngVirtualDomRenderMode: boolean | undefined | { addStateToDom: VoidFunction };
+export type NgVirtualDomRenderMode = boolean | undefined | NgVirtualDomRenderModeAPI;
+
+declare let ngVirtualDomRenderMode: NgVirtualDomRenderMode;
 
 @NgModule({
   exports: [BrowserModule],
@@ -14,18 +22,30 @@ declare let ngVirtualDomRenderMode: boolean | undefined | { addStateToDom: VoidF
   providers: [],
 })
 export class SSRBrowserModule {
+  constructor(
+    private applicationRef: ApplicationRef,
+    private transferState: TransferState,
+    @Optional() @Inject(APP_ID) private appId?: string,
+  ) {
+    if (typeof ngVirtualDomRenderMode !== 'undefined' && ngVirtualDomRenderMode) {
+      ngVirtualDomRenderMode = {
+        getSerializedState: () => escapeHtml(this.transferState.toJson()),
+        appId: this.appId,
+        getWhenStable: () => this.applicationRef.isStable.pipe(
+          filter(isStable => isStable),
+          take(1),
+          mapTo(undefined)
+        ).toPromise(),
+      };
+    }
+  }
+
   static forRoot(): ModuleWithProviders<SSRBrowserModule> {
     if (typeof ngVirtualDomRenderMode !== 'undefined' && ngVirtualDomRenderMode) {
       return {
         ngModule: SSRBrowserModule,
         providers: [
           TransferState,
-          {
-            provide: APP_INITIALIZER,
-            useFactory: serializeTransferStateFactory,
-            deps: [DOCUMENT, APP_ID, TransferState],
-            multi: true,
-          },
           { provide: PLATFORM_ID, useValue: PLATFORM_SERVER_ID },
           { provide: SSRStylesHost, useClass: SSRStylesHost, deps: [DOCUMENT, APP_ID] },
           { provide: SharedStylesHost, useExisting: SSRStylesHost },
@@ -36,20 +56,6 @@ export class SSRBrowserModule {
 
     return {
       ngModule: SSRBrowserModule
-    };
-  }
-}
-
-export function serializeTransferStateFactory(doc: Document, appId: string, transferStore: TransferState) {
-  return () => {
-    ngVirtualDomRenderMode = {
-      addStateToDom: () => {
-        const script = doc.createElement('script');
-        script.id = `${appId}-state`;
-        script.setAttribute('type', 'application/json');
-        script.textContent = escapeHtml(transferStore.toJson());
-        doc.body.appendChild(script);
-      }
     };
   }
 }

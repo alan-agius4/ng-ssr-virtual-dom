@@ -2,4 +2,4 @@
  * Public API Surface of server
  */
 
-export { SSRBrowserModule } from './lib/browser.module';
+export { SSRBrowserModule, NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from './lib/browser.module';
