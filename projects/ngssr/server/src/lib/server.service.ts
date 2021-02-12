@@ -62,12 +62,15 @@ export class SSRService {
     await ngVirtualDomRenderMode.getWhenStable();
 
     // Add Angular state
-    const doc = dom.window.document;
-    const script = doc.createElement('script');
-    script.id = `${ngVirtualDomRenderMode.appId}-state`;
-    script.setAttribute('type', 'application/json');
-    script.textContent = ngVirtualDomRenderMode.getSerializedState();
-    doc.body.appendChild(script);
+    const state = ngVirtualDomRenderMode.getSerializedState();
+    if (state) {
+      const doc = dom.window.document;
+      const script = doc.createElement('script');
+      script.id = `${ngVirtualDomRenderMode.appId}-state`;
+      script.setAttribute('type', 'application/json');
+      script.textContent = state;
+      doc.body.appendChild(script);
+    }
 
     const content = dom.serialize();
 

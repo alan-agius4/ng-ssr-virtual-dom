@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/demo",
+            "outputPath": "dist/demo/browser",
             "index": "projects/demo/src/index.html",
             "main": "projects/demo/src/main.ts",
             "polyfills": "projects/demo/src/polyfills.ts",
@@ -33,6 +33,7 @@
             "styles": [
               "projects/demo/src/styles.scss"
             ],
+            "optimization": false,
             "scripts": []
           },
           "configurations": {
@@ -105,7 +106,8 @@
             "tsConfig": [
               "projects/demo/tsconfig.app.json",
               "projects/demo/tsconfig.spec.json",
-              "projects/demo/e2e/tsconfig.json"
+              "projects/demo/e2e/tsconfig.json",
+              "projects/demo/tsconfig.server.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -122,6 +124,16 @@
             "production": {
               "devServerTarget": "demo:serve:production"
             }
+          }
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/demo/server",
+            "main": "projects/demo/server.ts",
+            "tsConfig": "projects/demo/tsconfig.server.json",
+            "bundleDependencies": false,
+            "sourceMap": false
           }
         }
       }

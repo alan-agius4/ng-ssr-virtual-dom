@@ -4,9 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build @ngssr/server && ng build demo --prod",
-    "app-shell": "yarn add file:dist/ngssr/server && yarn node projects/demo/app-shell.js",
-    "ssr": "yarn add file:dist/ngssr/server && node projects/demo/server.js",
+    "build": "ng build @ngssr/server && ng build demo --prod && ng run demo:server",
+    "app-shell": "yarn node projects/demo/app-shell.js",
+    "ssr": "node dist/demo/server/main.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
@@ -14,16 +14,15 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "~11.1.0-next.0",
-    "@angular/common": "~11.1.0-next.0",
-    "@angular/compiler": "~11.1.0-next.0",
-    "@angular/core": "~11.1.0-next.0",
-    "@angular/forms": "~11.1.0-next.0",
-    "@angular/platform-browser": "~11.1.0-next.0",
-    "@angular/platform-browser-dynamic": "~11.1.0-next.0",
-    "@angular/router": "~11.1.0-next.0",
-    "@ngssr/server": "file:dist/ngssr/server",
-    "critters": "^0.0.6",
+    "@angular/animations": "~11.2.0",
+    "@angular/common": "~11.2.0",
+    "@angular/compiler": "~11.2.0",
+    "@angular/core": "~11.2.0",
+    "@angular/forms": "~11.2.0",
+    "@angular/platform-browser": "~11.2.0",
+    "@angular/platform-browser-dynamic": "~11.2.0",
+    "@angular/router": "~11.2.0",
+    "critters": "^0.0.7",
     "express": "^4.17.1",
     "jsdom": "^16.4.0",
     "rxjs": "~6.6.0",
@@ -31,9 +30,9 @@
     "zone.js": "~0.11.3"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.1101.0-next.1",
-    "@angular/cli": "~11.1.0-next.0",
-    "@angular/compiler-cli": "~11.1.0-next.0",
+    "@angular-devkit/build-angular": "~0.1102.0",
+    "@angular/cli": "~11.2.0",
+    "@angular/compiler-cli": "~11.2.0",
     "@types/express": "^4.17.0",
     "@types/jasmine": "~3.6.0",
     "@types/jsdom": "^16.2.5",
@@ -51,6 +50,6 @@
     "protractor": "~7.0.0",
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
-    "typescript": "~4.0.2"
+    "typescript": "~4.1.5"
   }
 }
