@@ -2,7 +2,7 @@
 
 POC for Angular SSR with virtual JavaScript DOM.
 
-- What if Angular SSR didn't require the complex `@nguniversal` and `@angular/platform-server` packages setup?
+- What if Angular SSR didn't require the complex `@nguniversal` and `@angular/platform-server` packages on boarding?
 - What if we `Window is undefined` error was a thing of the past?
 - What if you don't need multiple builds for an SSR/prerender application?
 - What if an application shell can be generated without an extra build?
