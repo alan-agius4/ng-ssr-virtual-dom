@@ -16,6 +16,12 @@
       "root": "projects/demo",
       "sourceRoot": "projects/demo/src",
       "prefix": "app",
+      "i18n": {
+        "sourceLocale": "en-US",
+        "locales": {
+          "fr": "projects/demo/src/locale/messages.fr.xlf"
+        }
+      },
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
@@ -33,6 +39,7 @@
             "styles": [
               "projects/demo/src/styles.scss"
             ],
+            "localize": true,
             "optimization": false,
             "scripts": []
           },

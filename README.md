@@ -13,6 +13,7 @@ POC for Angular SSR with virtual JavaScript DOM.
 - [x] Inline critical CSS
 - [x] State transfer
 - [x] Clean up `<style>` tags
+- [x] i18n
 - [ ] Advanced use cases
 
 ## Try it out
@@ -57,7 +58,7 @@ export class AppModule { }
 ### projects/demo/server.js
 ```js
 const express = require('express');
-const { SSRService } = require('@ngssr/server');
+const { SSREngine } = require('@ngssr/server');
 
 const PORT = 8080;
 const DIST = './dist/demo/';
@@ -68,18 +69,19 @@ app.get('*.*', express.static(DIST, {
   maxAge: '1y'
 }));
 
-const ssr = new SSRService({
-  baseUrl: 'http://localhost:8080',
-  publicPath: DIST,
-});
+const ssr = new SSREngine();
 
 app.get('*', (req, res) => {
   ssr.render({
-    urlPath: req.originalUrl,
-    // Likely we should provide all headers.
+    publicPath: DIST,
+    url: {
+      protocol: req.protocol,
+      host: req.headers.host,
+      originalUrl: req.originalUrl,
+    },
     referrer: req.header('Referer')
   })
-  .then(html => res.send(html));
+    .then(html => res.send(html));
 });
 
 app.listen(PORT, () => {

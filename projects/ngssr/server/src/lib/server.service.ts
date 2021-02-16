@@ -1,53 +1,100 @@
 import Critters from 'critters';
 import { JSDOM } from 'jsdom';
-import { join, posix } from 'path';
+import { join } from 'path';
+import * as fs from 'fs';
 import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server/browser';
 import { CustomResourceLoader } from './custom-resource-loader';
 
 export interface RenderOptions {
   referrer?: string;
-  urlPath: string;
+  url: {
+    protocol: string;
+    host: string;
+    originalUrl: string;
+  };
   inlineCriticalCss?: boolean;
-}
-
-export interface ServiceOptions {
-  htmlFilePath?: string;
+  htmlFilename?: string;
   publicPath: string;
-  baseUrl: string;
 }
 
-export class SSRService {
-  private readonly customResourceLoader: CustomResourceLoader;
-  private readonly critters: Critters;
+export async function exists(path: fs.PathLike): Promise<boolean> {
+  try {
+    await fs.promises.access(path, fs.constants.F_OK);
 
-  constructor(private readonly options: ServiceOptions) {
-    this.customResourceLoader = new CustomResourceLoader(this.options.baseUrl, this.options.publicPath);
-    this.critters = new Critters({
-      path: this.options.publicPath,
-      publicPath: this.options.baseUrl,
-      compress: true,
-      pruneSource: false,
-      reduceInlineStyles: false,
-      mergeStylesheets: false,
-      preload: 'media',
-      noscriptFallback: true,
-    })
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export class SSREngine {
+  private readonly fileExists = new Map<string, boolean>();
+  private readonly htmlFileCache = new Map<string, string>();
+  private readonly customResourceLoaderCache = new Map<string, Buffer>();
+
+  private async getHtmlFile(
+    publicPath: string,
+    potentialLocalePath?: string,
+    htmlFilename = 'index.html'
+  ): Promise<string> {
+    const files = [
+      join(publicPath, htmlFilename),
+    ];
+
+    if (potentialLocalePath) {
+      files.push(join(publicPath, potentialLocalePath, htmlFilename));
+    }
+
+    for (const file of files) {
+      if (this.htmlFileCache.has(file)) {
+        return this.htmlFileCache.get(file)!;
+      }
+
+      if (this.fileExists.get(file) !== false) {
+        try {
+          const content = await fs.promises.readFile(file, 'utf-8');
+          this.htmlFileCache.set(file, content);
+          this.fileExists.set(file, true);
+
+          return content;
+        } catch {
+          this.fileExists.set(file, false);
+        }
+      }
+    }
+
+    throw new Error(`Cannot file HTML file. Looked in: ${files.join(', ')}`)
   }
 
   async render(options: RenderOptions): Promise<string> {
-    const file = join(this.options.publicPath, this.options.htmlFilePath ?? 'index.html');
-    const dom = await JSDOM.fromFile(file, {
+    const htmlContent = await this.getHtmlFile(
+      options.publicPath,
+      options.url.originalUrl.split('/', 2)[1], // potential base href
+      options.htmlFilename
+    );
+
+    const protocolAndHost = `${options.url.protocol}://${options.url.host}`;
+    const fullUrl = `${protocolAndHost}${options.url.originalUrl}`;
+
+    const customResourceLoader = new CustomResourceLoader(
+      protocolAndHost,
+      options.publicPath,
+      this.customResourceLoaderCache
+    );
+
+    const dom = new JSDOM(htmlContent, {
       runScripts: 'dangerously',
-      resources: this.customResourceLoader,
-      url: posix.join(this.options.baseUrl, options.urlPath),
+      resources: customResourceLoader,
+      url: fullUrl,
       referrer: options.referrer,
       beforeParse: window => {
         window.ngVirtualDomRenderMode = true
       },
     });
 
+    const doc = dom.window.document;
     const ngVirtualDomRenderMode = await new Promise<NgVirtualDomRenderModeAPI>(resolve => {
-      dom.window.document.addEventListener('DOMContentLoaded', () => {
+      doc.addEventListener('DOMContentLoaded', () => {
         const interval = setInterval(() => {
           const ngVirtualDomRenderMode = dom.window.ngVirtualDomRenderMode as NgVirtualDomRenderMode;
           if (ngVirtualDomRenderMode && typeof ngVirtualDomRenderMode === 'object') {
@@ -64,7 +111,6 @@ export class SSRService {
     // Add Angular state
     const state = ngVirtualDomRenderMode.getSerializedState();
     if (state) {
-      const doc = dom.window.document;
       const script = doc.createElement('script');
       script.id = `${ngVirtualDomRenderMode.appId}-state`;
       script.setAttribute('type', 'application/json');
@@ -74,8 +120,21 @@ export class SSRService {
 
     const content = dom.serialize();
 
-    return options.inlineCriticalCss === false
-      ? content
-      : this.critters.process(content);
+    if (options.inlineCriticalCss === false) {
+      return content;
+    }
+
+    const baseHref = doc.querySelector('base[href]')?.getAttribute('href') ?? '';
+    const critters = new Critters({
+      path: join(options.publicPath, baseHref),
+      compress: true,
+      pruneSource: false,
+      reduceInlineStyles: false,
+      mergeStylesheets: false,
+      preload: 'media',
+      noscriptFallback: true,
+    });
+
+    return critters.process(content);
   }
 }

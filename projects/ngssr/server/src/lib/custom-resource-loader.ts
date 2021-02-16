@@ -2,11 +2,11 @@ import { readFileSync } from 'fs';
 import { ResourceLoader } from 'jsdom';
 
 export class CustomResourceLoader extends ResourceLoader {
-  private readonly fileCache = new Map<string, Buffer>();
 
   constructor(
     private readonly baseUrl: string,
-    private readonly publicPath: string
+    private readonly publicPath: string,
+    private readonly fileCache: Map<string, Buffer>,
   ) {
     super();
   }
