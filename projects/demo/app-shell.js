@@ -1,8 +1,8 @@
-const { SSRService } = require('@ngssr/server');
+const { SSREngine } = require('@ngssr/server');
 const { writeFileSync } = require('fs');
 const { resolve } = require('path');
 
-const ssr = new SSRService({
+const ssr = new SSREngine({
   baseUrl: 'http://localhost',
   publicPath: './dist/demo/',
 });

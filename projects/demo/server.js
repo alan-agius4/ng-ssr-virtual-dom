@@ -1,5 +1,5 @@
 const express = require('express');
-const { SSRService } = require('@ngssr/server');
+const { SSREngine } = require('@ngssr/server');
 
 const PORT = 8080;
 const DIST = './dist/demo/';
@@ -10,7 +10,7 @@ app.get('*.*', express.static(DIST, {
   maxAge: '1y'
 }));
 
-const ssr = new SSRService({
+const ssr = new SSREngine({
   baseUrl: 'http://localhost:8080',
   publicPath: DIST,
 });
