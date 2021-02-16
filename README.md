@@ -14,6 +14,7 @@ POC for Angular SSR with virtual JavaScript DOM.
 - [x] State transfer
 - [x] Clean up `<style>` tags
 - [x] i18n
+- [x] Hybrid rendering
 - [ ] Advanced use cases
 
 ## Try it out
