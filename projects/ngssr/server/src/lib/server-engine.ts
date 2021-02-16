@@ -1,6 +1,6 @@
 import Critters from 'critters';
 import { JSDOM } from 'jsdom';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import * as fs from 'fs';
 import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server/browser';
 import { CustomResourceLoader } from './custom-resource-loader';
@@ -32,46 +32,14 @@ export class SSREngine {
   private readonly htmlFileCache = new Map<string, string>();
   private readonly customResourceLoaderCache = new Map<string, Buffer>();
 
-  private async getHtmlFile(
-    publicPath: string,
-    potentialLocalePath?: string,
-    htmlFilename = 'index.html'
-  ): Promise<string> {
-    const files = [
-      join(publicPath, htmlFilename),
-    ];
-
-    if (potentialLocalePath) {
-      files.push(join(publicPath, potentialLocalePath, htmlFilename));
-    }
-
-    for (const file of files) {
-      if (this.htmlFileCache.has(file)) {
-        return this.htmlFileCache.get(file)!;
-      }
-
-      if (this.fileExists.get(file) !== false) {
-        try {
-          const content = await fs.promises.readFile(file, 'utf-8');
-          this.htmlFileCache.set(file, content);
-          this.fileExists.set(file, true);
-
-          return content;
-        } catch {
-          this.fileExists.set(file, false);
-        }
-      }
-    }
-
-    throw new Error(`Cannot file HTML file. Looked in: ${files.join(', ')}`)
-  }
-
   async render(options: RenderOptions): Promise<string> {
-    const htmlContent = await this.getHtmlFile(
-      options.publicPath,
-      options.url.originalUrl.split('/', 2)[1], // potential base href
-      options.htmlFilename
-    );
+    const prerenderedSnapshot = await this.getPrerenderedSnapshot(options);
+
+    if (prerenderedSnapshot) {
+      return prerenderedSnapshot;
+    }
+
+    const htmlContent = await this.getHtmlContent(options);
 
     const protocolAndHost = `${options.url.protocol}://${options.url.host}`;
     const fullUrl = `${protocolAndHost}${options.url.originalUrl}`;
@@ -136,5 +104,58 @@ export class SSREngine {
     });
 
     return critters.process(content);
+  }
+
+  private async getPrerenderedSnapshot({ publicPath, url, htmlFilename = 'index.html' }: RenderOptions): Promise<string | undefined> {
+    // When hybrid rendering the 
+    // Remove leading forward slash.
+    const pagePath = resolve(publicPath, url.originalUrl.substring(1), 'index.html');
+
+    if (pagePath !== resolve(htmlFilename)) {
+      // View path doesn't match with prerender path.
+      let pageExists = this.fileExists.get(pagePath);
+      if (pageExists === undefined) {
+        pageExists = await exists(pagePath);
+        this.fileExists.set(pagePath, pageExists);
+      }
+
+      if (pageExists) {
+        // Serve pre-rendered page.
+        return fs.promises.readFile(pagePath, 'utf-8');
+      }
+    }
+
+    return undefined;
+  }
+
+  private async getHtmlContent({ publicPath, url, htmlFilename = 'index.html' }: RenderOptions): Promise<string> {
+    const files = [
+      join(publicPath, htmlFilename),
+    ];
+
+    const potentialLocalePath = url.originalUrl.split('/', 2)[1]; // potential base href
+    if (potentialLocalePath) {
+      files.push(join(publicPath, potentialLocalePath, htmlFilename));
+    }
+
+    for (const file of files) {
+      if (this.htmlFileCache.has(file)) {
+        return this.htmlFileCache.get(file)!;
+      }
+
+      if (this.fileExists.get(file) !== false) {
+        try {
+          const content = await fs.promises.readFile(file, 'utf-8');
+          this.htmlFileCache.set(file, content);
+          this.fileExists.set(file, true);
+
+          return content;
+        } catch {
+          this.fileExists.set(file, false);
+        }
+      }
+    }
+
+    throw new Error(`Cannot file HTML file. Looked in: ${files.join(', ')}`)
   }
 }

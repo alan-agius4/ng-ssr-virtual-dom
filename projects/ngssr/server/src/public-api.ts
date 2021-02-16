@@ -2,4 +2,4 @@
  * Public API Surface of server
  */
 
-export { RenderOptions, SSREngine } from './lib/server.service';
+export { RenderOptions, SSREngine } from './lib/server-engine';
