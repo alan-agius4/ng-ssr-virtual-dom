@@ -6,7 +6,7 @@ import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server
 import { CustomResourceLoader } from './custom-resource-loader';
 
 export interface RenderOptions {
-  referrer?: string;
+  headers?: Record<string, string | undefined | string[]>,
   url: {
     protocol: string;
     host: string;
@@ -33,11 +33,11 @@ export class SSREngine {
   private readonly customResourceLoaderCache = new Map<string, Buffer>();
 
   async render(options: RenderOptions): Promise<string> {
-    const prerenderedSnapshot = await this.getPrerenderedSnapshot(options);
+    // const prerenderedSnapshot = await this.getPrerenderedSnapshot(options);
 
-    if (prerenderedSnapshot) {
-      return prerenderedSnapshot;
-    }
+    // if (prerenderedSnapshot) {
+    //   return prerenderedSnapshot;
+    // }
 
     const htmlContent = await this.getHtmlContent(options);
 
@@ -54,7 +54,8 @@ export class SSREngine {
       runScripts: 'dangerously',
       resources: customResourceLoader,
       url: fullUrl,
-      referrer: options.referrer,
+      referrer: options.headers?.referrer as string | undefined,
+      userAgent: options.headers?.['user-agent'] as string | undefined,
       beforeParse: window => {
         window.ngVirtualDomRenderMode = true
       },
