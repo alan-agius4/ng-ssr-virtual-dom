@@ -28,8 +28,7 @@ app.get('*', (req, res) => {
       host: req.get('host') as string,
       originalUrl: req.originalUrl,
     },
-    // Likely we should provide all headers.
-    referrer: req.header('Referer')
+    headers: req.headers,
   })
     .then(html => res.send(html));
 });

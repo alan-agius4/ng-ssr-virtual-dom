@@ -14,7 +14,7 @@ POC for Angular SSR with virtual JavaScript DOM.
 - [x] State transfer
 - [x] Clean up `<style>` tags
 - [x] i18n
-- [x] Hybrid rendering
+- [ ] Hybrid rendering
 - [ ] Advanced use cases
 
 ## Try it out
@@ -80,7 +80,7 @@ app.get('*', (req, res) => {
       host: req.headers.host,
       originalUrl: req.originalUrl,
     },
-    referrer: req.header('Referer')
+    headers: req.headers
   })
     .then(html => res.send(html));
 });
