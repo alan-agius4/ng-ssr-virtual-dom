@@ -16,19 +16,8 @@ export interface RenderOptions {
   htmlFilename?: string;
   publicPath: string;
 }
-
-export async function exists(path: fs.PathLike): Promise<boolean> {
-  try {
-    await fs.promises.access(path, fs.constants.F_OK);
-
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export class SSREngine {
-  private readonly fileExists = new Map<string, boolean>();
+  private readonly fileExistsCache = new Map<string, boolean>();
   private readonly htmlFileCache = new Map<string, string>();
   private readonly customResourceLoaderCache = new Map<string, Buffer>();
 
@@ -112,14 +101,7 @@ export class SSREngine {
     // Remove leading forward slash.
     const pagePath = resolve(publicPath, url.originalUrl.substring(1), 'index.html');
 
-    let pageExists = this.fileExists.get(pagePath);
-    if (pageExists === undefined) {
-      pageExists = await exists(pagePath);
-      this.fileExists.set(pagePath, pageExists);
-    }
-
-    if (pageExists) {
-      // Serve pre-rendered page.
+    if (await this.fileExists(pagePath)) {
       const content = await fs.promises.readFile(pagePath, 'utf-8');
       if (content.includes('ng-version=')) {
         // Page is pre-rendered
@@ -145,19 +127,33 @@ export class SSREngine {
         return this.htmlFileCache.get(file)!;
       }
 
-      if (this.fileExists.get(file) !== false) {
-        try {
-          const content = await fs.promises.readFile(file, 'utf-8');
-          this.htmlFileCache.set(file, content);
-          this.fileExists.set(file, true);
+      if (await this.fileExists(file)) {
+        const content = await fs.promises.readFile(file, 'utf-8');
+        this.htmlFileCache.set(file, content);
 
-          return content;
-        } catch {
-          this.fileExists.set(file, false);
-        }
+        return content;
       }
     }
 
     throw new Error(`Cannot file HTML file. Looked in: ${files.join(', ')}`)
+  }
+
+  private async fileExists(path: string): Promise<boolean> {
+    let fileExists = this.fileExistsCache.get(path);
+    if (fileExists === undefined) {
+      try {
+        await fs.promises.access(path, fs.constants.F_OK);
+        this.fileExistsCache.set(path, true);
+
+        return true;
+      } catch {
+
+        this.fileExistsCache.set(path, false);
+        return false;
+      }
+    }
+
+    return fileExists;
+
   }
 }
