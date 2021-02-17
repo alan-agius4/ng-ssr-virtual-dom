@@ -33,11 +33,11 @@ export class SSREngine {
   private readonly customResourceLoaderCache = new Map<string, Buffer>();
 
   async render(options: RenderOptions): Promise<string> {
-    // const prerenderedSnapshot = await this.getPrerenderedSnapshot(options);
+    const prerenderedSnapshot = await this.getPrerenderedSnapshot(options);
 
-    // if (prerenderedSnapshot) {
-    //   return prerenderedSnapshot;
-    // }
+    if (prerenderedSnapshot) {
+      return prerenderedSnapshot;
+    }
 
     const htmlContent = await this.getHtmlContent(options);
 
@@ -107,22 +107,23 @@ export class SSREngine {
     return critters.process(content);
   }
 
-  private async getPrerenderedSnapshot({ publicPath, url, htmlFilename = 'index.html' }: RenderOptions): Promise<string | undefined> {
+  private async getPrerenderedSnapshot({ publicPath, url }: RenderOptions): Promise<string | undefined> {
     // When hybrid rendering the 
     // Remove leading forward slash.
     const pagePath = resolve(publicPath, url.originalUrl.substring(1), 'index.html');
 
-    if (pagePath !== resolve(htmlFilename)) {
-      // View path doesn't match with prerender path.
-      let pageExists = this.fileExists.get(pagePath);
-      if (pageExists === undefined) {
-        pageExists = await exists(pagePath);
-        this.fileExists.set(pagePath, pageExists);
-      }
+    let pageExists = this.fileExists.get(pagePath);
+    if (pageExists === undefined) {
+      pageExists = await exists(pagePath);
+      this.fileExists.set(pagePath, pageExists);
+    }
 
-      if (pageExists) {
-        // Serve pre-rendered page.
-        return fs.promises.readFile(pagePath, 'utf-8');
+    if (pageExists) {
+      // Serve pre-rendered page.
+      const content = await fs.promises.readFile(pagePath, 'utf-8');
+      if (content.includes('ng-version=')) {
+        // Page is pre-rendered
+        return content;
       }
     }
 
