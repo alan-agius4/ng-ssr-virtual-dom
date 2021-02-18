@@ -1,6 +1,7 @@
 import express from 'express';
 import { SSREngine } from '@ngssr/server';
 import { join } from 'path';
+import { format } from 'url';
 
 const PORT = 8080;
 const DIST = join(__dirname, '../browser');
@@ -23,11 +24,12 @@ const ssr = new SSREngine();
 app.get('*', (req, res) => {
   ssr.render({
     publicPath: DIST,
-    url: {
+    url: format({
       protocol: req.protocol,
-      host: req.get('host') as string,
-      originalUrl: req.originalUrl,
-    },
+      host: req.get('host'),
+      pathname: req.path,
+      query: req.query as Record<string, any>,
+    }),
     headers: req.headers,
   })
     .then(html => res.send(html));

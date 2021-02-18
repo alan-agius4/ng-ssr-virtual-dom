@@ -2,16 +2,13 @@ import Critters from 'critters';
 import { JSDOM } from 'jsdom';
 import { join, resolve } from 'path';
 import * as fs from 'fs';
+import { URL, format } from 'url';
 import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server/browser';
 import { CustomResourceLoader } from './custom-resource-loader';
 
 export interface RenderOptions {
   headers?: Record<string, string | undefined | string[]>,
-  url: {
-    protocol: string;
-    host: string;
-    originalUrl: string;
-  };
+  url: string;
   inlineCriticalCss?: boolean;
   htmlFilename?: string;
   publicPath: string;
@@ -22,19 +19,18 @@ export class SSREngine {
   private readonly customResourceLoaderCache = new Map<string, Buffer>();
 
   async render(options: RenderOptions): Promise<string> {
-    const prerenderedSnapshot = await this.getPrerenderedSnapshot(options);
+    const { pathname, origin } = new URL(options.url);
+
+    const prerenderedSnapshot = await this.getPrerenderedSnapshot(options.publicPath, pathname);
 
     if (prerenderedSnapshot) {
       return prerenderedSnapshot;
     }
 
-    const htmlContent = await this.getHtmlContent(options);
-
-    const protocolAndHost = `${options.url.protocol}://${options.url.host}`;
-    const fullUrl = `${protocolAndHost}${options.url.originalUrl}`;
+    const htmlContent = await this.getHtmlContent(options.publicPath, pathname, options.htmlFilename);
 
     const customResourceLoader = new CustomResourceLoader(
-      protocolAndHost,
+      origin,
       options.publicPath,
       this.customResourceLoaderCache
     );
@@ -42,7 +38,7 @@ export class SSREngine {
     const dom = new JSDOM(htmlContent, {
       runScripts: 'dangerously',
       resources: customResourceLoader,
-      url: fullUrl,
+      url: options.url,
       referrer: options.headers?.referrer as string | undefined,
       userAgent: options.headers?.['user-agent'] as string | undefined,
       beforeParse: window => {
@@ -96,10 +92,10 @@ export class SSREngine {
     return critters.process(content);
   }
 
-  private async getPrerenderedSnapshot({ publicPath, url }: RenderOptions): Promise<string | undefined> {
+  private async getPrerenderedSnapshot(publicPath: string, pathname: string): Promise<string | undefined> {
     // When hybrid rendering the 
     // Remove leading forward slash.
-    const pagePath = resolve(publicPath, url.originalUrl.substring(1), 'index.html');
+    const pagePath = resolve(publicPath, pathname.substring(1), 'index.html');
 
     if (await this.fileExists(pagePath)) {
       const content = await fs.promises.readFile(pagePath, 'utf-8');
@@ -112,12 +108,12 @@ export class SSREngine {
     return undefined;
   }
 
-  private async getHtmlContent({ publicPath, url, htmlFilename = 'index.html' }: RenderOptions): Promise<string> {
+  private async getHtmlContent(publicPath: string, pathname: string, htmlFilename = 'index.html'): Promise<string> {
     const files = [
       join(publicPath, htmlFilename),
     ];
 
-    const potentialLocalePath = url.originalUrl.split('/', 2)[1]; // potential base href
+    const potentialLocalePath = pathname.split('/', 2)[1]; // potential base href
     if (potentialLocalePath) {
       files.push(join(publicPath, potentialLocalePath, htmlFilename));
     }
