@@ -1,8 +1,7 @@
 import { readFileSync } from 'fs';
-import { ResourceLoader } from 'jsdom';
+import { FetchOptions, ResourceLoader } from 'jsdom';
 
 export class CustomResourceLoader extends ResourceLoader {
-
   constructor(
     private readonly baseUrl: string,
     private readonly publicPath: string,
@@ -11,8 +10,8 @@ export class CustomResourceLoader extends ResourceLoader {
     super();
   }
 
-  fetch(url: string): Promise<Buffer> | null {
-    if (!url.startsWith(this.baseUrl)) {
+  fetch(url: string, options: FetchOptions): Promise<Buffer> | null {
+    if (!url.endsWith('.js') || !url.startsWith(this.baseUrl)) {
       return null;
     }
 
