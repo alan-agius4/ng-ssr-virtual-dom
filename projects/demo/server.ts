@@ -10,7 +10,8 @@ const app = express();
 app.set('views', DIST);
 
 app.get('*.*', express.static(DIST, {
-  maxAge: '1y'
+  maxAge: '1y',
+  fallthrough: false,
 }));
 
 
@@ -21,7 +22,7 @@ app.get(/^(\/|\/favicon\.ico)$/, (req, res) => {
 
 const ssr = new SSREngine();
 
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
   ssr.render({
     publicPath: DIST,
     url: format({
@@ -32,7 +33,8 @@ app.get('*', (req, res) => {
     }),
     headers: req.headers,
   })
-    .then(html => res.send(html));
+    .then(html => res.send(html))
+    .catch(err => next(err));
 });
 
 app.listen(PORT, () => {
