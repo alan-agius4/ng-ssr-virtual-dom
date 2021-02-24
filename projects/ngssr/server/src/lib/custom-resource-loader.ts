@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { promises } from 'fs';
 import { FetchOptions, ResourceLoader } from 'jsdom';
 
 export class CustomResourceLoader extends ResourceLoader {
@@ -17,12 +17,12 @@ export class CustomResourceLoader extends ResourceLoader {
 
     const path = url.replace(this.baseUrl, this.publicPath);
     if (this.fileCache.has(path)) {
-      this.fileCache.get(path);
+      return Promise.resolve(this.fileCache.get(path)!);
     }
 
-    const content = readFileSync(path);
-    this.fileCache.set(path, content);
-
-    return Promise.resolve(content);
+    return promises.readFile(path).then(content => {
+      this.fileCache.set(path, content);
+      return content;
+    });
   }
 }
