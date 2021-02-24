@@ -33,7 +33,7 @@ export class SSREngine {
       return prerenderedSnapshot;
     }
 
-    const htmlContent = await this.getHtmlContent(options.publicPath, pathname, options.htmlFilename);
+    const htmlContent = await this.getHtmlTemplate(options.publicPath, pathname, options.htmlFilename);
 
     const customResourceLoader = new CustomResourceLoader(
       origin,
@@ -101,18 +101,13 @@ export class SSREngine {
     // Remove leading forward slash.
     const pagePath = resolve(publicPath, pathname.substring(1), 'index.html');
 
-    if (await this.fileExists(pagePath)) {
-      const content = await fs.promises.readFile(pagePath, 'utf-8');
-      if (content.includes('ng-version=')) {
-        // Page is pre-rendered
-        return content;
-      }
-    }
-
-    return undefined;
+    const content = await this.readHTMLFile(pagePath);
+    return content?.includes('ng-version=')
+      ? content // Page is pre-rendered
+      : undefined;
   }
 
-  private async getHtmlContent(publicPath: string, pathname: string, htmlFilename = 'index.html'): Promise<string> {
+  private async getHtmlTemplate(publicPath: string, pathname: string, htmlFilename = 'index.html'): Promise<string> {
     const files = [
       join(publicPath, htmlFilename),
     ];
@@ -123,14 +118,8 @@ export class SSREngine {
     }
 
     for (const file of files) {
-      if (this.htmlFileCache.has(file)) {
-        return this.htmlFileCache.get(file)!;
-      }
-
-      if (await this.fileExists(file)) {
-        const content = await fs.promises.readFile(file, 'utf-8');
-        this.htmlFileCache.set(file, content);
-
+      const content = await this.readHTMLFile(file);
+      if (content) {
         return content;
       }
     }
@@ -154,5 +143,20 @@ export class SSREngine {
     }
 
     return fileExists;
+  }
+
+  private async readHTMLFile(path: string): Promise<string | undefined> {
+    if (this.htmlFileCache.has(path)) {
+      return this.htmlFileCache.get(path)!;
+    }
+
+    if (await this.fileExists(path)) {
+      const content = await fs.promises.readFile(path, 'utf-8');
+      this.htmlFileCache.set(path, content);
+
+      return content;
+    }
+
+    return undefined;
   }
 }
