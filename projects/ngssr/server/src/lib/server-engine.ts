@@ -14,6 +14,7 @@ export interface RenderOptions {
   htmlFilename?: string;
   publicPath: string;
 }
+
 export class SSREngine {
   private readonly fileExistsCache = new Map<string, boolean>();
   private readonly htmlFileCache = new Map<string, string>();
