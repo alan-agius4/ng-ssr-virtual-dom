@@ -48,7 +48,7 @@ export class SSREngine {
       referrer: options.headers?.referrer as string | undefined,
       userAgent: options.headers?.['user-agent'] as string | undefined,
       beforeParse: window => {
-        window.ngVirtualDomRenderMode = true
+        window.ngVirtualDomRenderMode = true;
       },
     });
 
