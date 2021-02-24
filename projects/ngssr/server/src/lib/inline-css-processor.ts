@@ -1,13 +1,5 @@
-/**
- * @license
- * Copyright Google LLC All Rights Reserved.
- *
- * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
- */
-
 import Critters from 'critters';
-import * as fs from 'fs';
+import { promises } from 'fs';
 
 export interface InlineCriticalCssProcessOptions {
   outputPath?: string;
@@ -50,7 +42,7 @@ class CrittersExtended extends Critters {
   protected async readFile(path: string): Promise<string> {
     let resourceContent = this.resourceCache.get(path);
     if (resourceContent === undefined) {
-      resourceContent = await fs.promises.readFile(path);
+      resourceContent = await promises.readFile(path);
       this.resourceCache.set(path, resourceContent);
     }
 
