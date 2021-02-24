@@ -2,9 +2,10 @@ import Critters from 'critters';
 import { JSDOM } from 'jsdom';
 import { join, resolve } from 'path';
 import * as fs from 'fs';
-import { URL, format } from 'url';
+import { URL } from 'url';
 import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server/browser';
 import { CustomResourceLoader } from './custom-resource-loader';
+import { InlineCriticalCssProcessor } from './inline-css-processor';
 
 export interface RenderOptions {
   headers?: Record<string, string | undefined | string[]>,
@@ -16,11 +17,16 @@ export interface RenderOptions {
 export class SSREngine {
   private readonly fileExistsCache = new Map<string, boolean>();
   private readonly htmlFileCache = new Map<string, string>();
-  private readonly customResourceLoaderCache = new Map<string, Buffer>();
+  private readonly resourceLoaderCache = new Map<string, Buffer>();
+  private readonly inlineCriticalCssProcessor = new InlineCriticalCssProcessor(
+    { minify: true },
+    this.resourceLoaderCache,
+  );
 
   async render(options: RenderOptions): Promise<string> {
-    const { pathname, origin } = new URL(options.url);
+    console.time('Render');
 
+    const { pathname, origin } = new URL(options.url);
     const prerenderedSnapshot = await this.getPrerenderedSnapshot(options.publicPath, pathname);
 
     if (prerenderedSnapshot) {
@@ -32,7 +38,7 @@ export class SSREngine {
     const customResourceLoader = new CustomResourceLoader(
       origin,
       options.publicPath,
-      this.customResourceLoaderCache
+      this.resourceLoaderCache
     );
 
     const dom = new JSDOM(htmlContent, {
@@ -56,7 +62,7 @@ export class SSREngine {
             clearInterval(interval);
             resolve(ngVirtualDomRenderMode);
           }
-        }, 50);
+        }, 30);
       });
     });
 
@@ -73,23 +79,21 @@ export class SSREngine {
     }
 
     const content = dom.serialize();
-
     if (options.inlineCriticalCss === false) {
+      console.timeEnd('Render');
       return content;
     }
 
     const baseHref = doc.querySelector('base[href]')?.getAttribute('href') ?? '';
-    const critters = new Critters({
-      path: join(options.publicPath, baseHref),
-      compress: true,
-      pruneSource: false,
-      reduceInlineStyles: false,
-      mergeStylesheets: false,
-      preload: 'media',
-      noscriptFallback: true,
-    });
+    const { content: contentWithInlineCSS, warnings, errors } = await this.inlineCriticalCssProcessor.process(content, {
+      outputPath: join(options.publicPath, baseHref),
+    })
 
-    return critters.process(content);
+    warnings.forEach(m => console.warn(m));
+    errors.forEach(m => console.error(m));
+
+    console.timeEnd('Render');
+    return contentWithInlineCSS;
   }
 
   private async getPrerenderedSnapshot(publicPath: string, pathname: string): Promise<string | undefined> {

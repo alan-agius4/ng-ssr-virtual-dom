@@ -1,5 +1,6 @@
 import { promises } from 'fs';
 import { FetchOptions, ResourceLoader } from 'jsdom';
+import { normalize } from 'path';
 
 export class CustomResourceLoader extends ResourceLoader {
   constructor(
@@ -15,7 +16,7 @@ export class CustomResourceLoader extends ResourceLoader {
       return null;
     }
 
-    const path = url.replace(this.baseUrl, this.publicPath);
+    const path = normalize(url.replace(this.baseUrl, this.publicPath));
     if (this.fileCache.has(path)) {
       return Promise.resolve(this.fileCache.get(path)!);
     }
