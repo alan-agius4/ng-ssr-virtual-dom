@@ -6,15 +6,15 @@ import {
 } from '@angular/platform-browser';
 import { SSRStylesHost } from './styles_host';
 import { filter, mapTo, take } from 'rxjs/operators';
-export interface NgVirtualDomRenderModeAPI {
+export interface NGDOMRenderModeAPI {
   getSerializedState: () => string | undefined,
   getWhenStable: () => Promise<void>,
   appId?: string,
 }
 
-export type NgVirtualDomRenderMode = boolean | undefined | NgVirtualDomRenderModeAPI;
+export type ngDOMRenderMode = boolean | undefined | NGDOMRenderModeAPI;
 
-declare let ngVirtualDomRenderMode: NgVirtualDomRenderMode;
+declare let ngDOMRenderMode: ngDOMRenderMode;
 
 @NgModule({
   exports: [BrowserModule],
@@ -27,8 +27,8 @@ export class SSRBrowserModule {
     @Optional() private transferState?: TransferState,
     @Optional() @Inject(APP_ID) private appId?: string,
   ) {
-    if (typeof ngVirtualDomRenderMode !== 'undefined' && ngVirtualDomRenderMode) {
-      ngVirtualDomRenderMode = {
+    if (typeof ngDOMRenderMode !== 'undefined' && ngDOMRenderMode) {
+      ngDOMRenderMode = {
         getSerializedState: () => this.transferState ? escapeHtml(this.transferState.toJson()) : undefined,
         appId: this.appId,
         getWhenStable: () => this.applicationRef.isStable.pipe(
@@ -41,7 +41,7 @@ export class SSRBrowserModule {
   }
 
   static forRoot(): ModuleWithProviders<SSRBrowserModule> {
-    if (typeof ngVirtualDomRenderMode !== 'undefined' && ngVirtualDomRenderMode) {
+    if (typeof ngDOMRenderMode !== 'undefined' && ngDOMRenderMode) {
       return {
         ngModule: SSRBrowserModule,
         providers: [

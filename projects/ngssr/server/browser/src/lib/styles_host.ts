@@ -25,7 +25,6 @@ export class SSRStylesHost extends SharedStylesHost implements OnDestroy {
   private _addStyle(style: string): void {
     const el = getDOM().createElement('style');
     el.textContent = style;
-    debugger;
     if (this.appId) {
       el.setAttribute('ng-transition', this.appId);
     }

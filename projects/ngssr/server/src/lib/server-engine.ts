@@ -1,9 +1,8 @@
-import Critters from 'critters';
 import { JSDOM } from 'jsdom';
 import { join, resolve } from 'path';
 import * as fs from 'fs';
 import { URL } from 'url';
-import { NgVirtualDomRenderMode, NgVirtualDomRenderModeAPI } from '@ngssr/server/browser';
+import { ngDOMRenderMode, NGDOMRenderModeAPI } from '@ngssr/server/browser';
 import { CustomResourceLoader } from './custom-resource-loader';
 import { InlineCriticalCssProcessor } from './inline-css-processor';
 
@@ -49,31 +48,31 @@ export class SSREngine {
       referrer: options.headers?.referrer as string | undefined,
       userAgent: options.headers?.['user-agent'] as string | undefined,
       beforeParse: window => {
-        window.ngVirtualDomRenderMode = true;
+        window.ngDOMRenderMode = true;
       },
     });
 
     const doc = dom.window.document;
-    const ngVirtualDomRenderMode = await new Promise<NgVirtualDomRenderModeAPI>(resolve => {
+    const ngDOMRenderMode = await new Promise<NGDOMRenderModeAPI>(resolve => {
       doc.addEventListener('DOMContentLoaded', () => {
         const interval = setInterval(() => {
-          const ngVirtualDomRenderMode = dom.window.ngVirtualDomRenderMode as NgVirtualDomRenderMode;
-          if (ngVirtualDomRenderMode && typeof ngVirtualDomRenderMode === 'object') {
+          const ngDOMRenderMode = dom.window.ngDOMRenderMode as ngDOMRenderMode;
+          if (ngDOMRenderMode && typeof ngDOMRenderMode === 'object') {
             // Wait until up is stable or limit reached.
             clearInterval(interval);
-            resolve(ngVirtualDomRenderMode);
+            resolve(ngDOMRenderMode);
           }
         }, 30);
       });
     });
 
-    await ngVirtualDomRenderMode.getWhenStable();
+    await ngDOMRenderMode.getWhenStable();
 
     // Add Angular state
-    const state = ngVirtualDomRenderMode.getSerializedState();
+    const state = ngDOMRenderMode.getSerializedState();
     if (state) {
       const script = doc.createElement('script');
-      script.id = `${ngVirtualDomRenderMode.appId}-state`;
+      script.id = `${ngDOMRenderMode.appId}-state`;
       script.setAttribute('type', 'application/json');
       script.textContent = state;
       doc.body.appendChild(script);
@@ -137,8 +136,8 @@ export class SSREngine {
 
         return true;
       } catch {
-
         this.fileExistsCache.set(path, false);
+
         return false;
       }
     }

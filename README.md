@@ -1,4 +1,4 @@
-# Angular SSR Virtual Dom
+# Angular SSR JavaScript DOM
 
 POC for Angular SSR with JavaScript DOM.
 
