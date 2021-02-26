@@ -12,7 +12,7 @@ POC for Angular SSR with JavaScript DOM.
 - [x] Application stablization
 - [x] Inline critical CSS
 - [x] State transfer
-- [x] Clean up `<style>` tags
+- [x] Re-use component styles generated on the server
 - [x] i18n
 - [x] Hybrid rendering
 

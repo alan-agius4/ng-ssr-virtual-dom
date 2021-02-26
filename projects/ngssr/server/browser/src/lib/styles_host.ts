@@ -8,30 +8,53 @@
 
 import { DOCUMENT, ɵgetDOM as getDOM } from '@angular/common';
 import { Inject, Injectable, OnDestroy, Optional, APP_ID } from '@angular/core';
-import { ɵSharedStylesHost as SharedStylesHost, } from '@angular/platform-browser';
+import { ɵSharedStylesHost as SharedStylesHost } from '@angular/platform-browser';
+
+declare let ngDevMode: boolean | {} | undefined;
 
 @Injectable()
 export class SSRStylesHost extends SharedStylesHost implements OnDestroy {
   private head: HTMLHeadElement | null;
   private _styleNodes = new Set<HTMLElement>();
+  private _styleNodesInDOM: Map<string | null, HTMLElement> | undefined;
 
   constructor(
     @Inject(DOCUMENT) private doc: Document,
     @Optional() @Inject(APP_ID) private appId?: string) {
     super();
     this.head = doc.querySelector('head');
+
+    const styles = this.head?.querySelectorAll(`style[ng-style='${this.appId}']`);
+    if (styles?.length) {
+      const items = Array.from(styles) as HTMLElement[];
+      this._styleNodesInDOM = new Map(items.map(el => [el.textContent, el]));
+    }
   }
 
   private _addStyle(style: string): void {
+    const element = this._styleNodesInDOM?.get(style);
+    if (element) {
+      if (typeof ngDevMode !== undefined && ngDevMode) {
+        element.setAttribute('ng-reused', '');
+      }
+
+      this._styleNodesInDOM?.delete(style);
+      this._styleNodes.add(element);
+
+      return;
+    }
+
     const el = getDOM().createElement('style');
     el.textContent = style;
+
     if (this.appId) {
-      el.setAttribute('ng-transition', this.appId);
+      el.setAttribute('ng-style', this.appId);
     }
 
     if (this.head) {
       this.head.appendChild(el);
     }
+
     this._styleNodes.add(el);
   }
 

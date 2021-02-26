@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build @ngssr/server && ng build demo --prod && ng run demo:server",
+    "build": "ng build @ngssr/server && ng build demo && ng run demo:server",
     "app-shell": "yarn node projects/demo/app-shell.js",
     "ssr": "node dist/demo/server/main.js",
     "test": "ng test",

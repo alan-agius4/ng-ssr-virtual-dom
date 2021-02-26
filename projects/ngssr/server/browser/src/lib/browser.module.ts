@@ -41,20 +41,21 @@ export class SSRBrowserModule {
   }
 
   static forRoot(): ModuleWithProviders<SSRBrowserModule> {
-    if (typeof ngDOMRenderMode !== 'undefined' && ngDOMRenderMode) {
-      return {
-        ngModule: SSRBrowserModule,
-        providers: [
-          { provide: PLATFORM_ID, useValue: PLATFORM_SERVER_ID },
-          { provide: SSRStylesHost, useClass: SSRStylesHost, deps: [DOCUMENT, APP_ID] },
-          { provide: SharedStylesHost, useExisting: SSRStylesHost },
-          { provide: DomSharedStylesHost, useClass: SSRStylesHost },
-        ]
-      };
-    }
-
     return {
-      ngModule: SSRBrowserModule
+      ngModule: SSRBrowserModule,
+      providers: [
+        ...(typeof ngDOMRenderMode !== 'undefined' && ngDOMRenderMode
+          ? [
+            { provide: PLATFORM_ID, useValue: PLATFORM_SERVER_ID },
+            { provide: SSRStylesHost, useClass: SSRStylesHost, deps: [DOCUMENT, APP_ID] },
+          ]
+          : [
+            { provide: SSRStylesHost, useClass: SSRStylesHost, deps: [DOCUMENT] },
+          ]
+        ),
+        { provide: SharedStylesHost, useExisting: SSRStylesHost },
+        { provide: DomSharedStylesHost, useClass: SSRStylesHost },
+      ]
     };
   }
 }
