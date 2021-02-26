@@ -23,7 +23,6 @@ export class SSRStylesHost extends SharedStylesHost implements OnDestroy {
     @Optional() @Inject(APP_ID) private appId?: string) {
     super();
     this.head = doc.querySelector('head');
-
     const styles = this.head?.querySelectorAll(`style[ng-style='${this.appId}']`);
     if (styles?.length) {
       const items = Array.from(styles) as HTMLElement[];
@@ -35,7 +34,7 @@ export class SSRStylesHost extends SharedStylesHost implements OnDestroy {
     const element = this._styleNodesInDOM?.get(style);
     if (element) {
       if (typeof ngDevMode !== undefined && ngDevMode) {
-        element.setAttribute('ng-reused', '');
+        element.setAttribute('_ng-style-reused', '');
       }
 
       this._styleNodesInDOM?.delete(style);
@@ -60,6 +59,14 @@ export class SSRStylesHost extends SharedStylesHost implements OnDestroy {
 
   onStylesAdded(additions: Set<string>) {
     additions.forEach(style => this._addStyle(style));
+  }
+
+  addHost(hostNode: Node): void {
+    // stub
+  }
+
+  removeHost(hostNode: Node): void {
+    // stub
   }
 
   ngOnDestroy() {

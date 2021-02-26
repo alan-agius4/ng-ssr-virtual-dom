@@ -31,6 +31,7 @@ class CrittersExtended extends Critters {
       pruneSource: false,
       reduceInlineStyles: false,
       mergeStylesheets: false,
+      inlineFonts: true,
       preload: 'media',
       noscriptFallback: true,
       // Cast any is needed because of logger API is not exposed as part of the options
