@@ -54,16 +54,14 @@ export class SSREngine {
 
     const doc = dom.window.document;
     const ngDOMRenderMode = await new Promise<NGDOMRenderModeAPI>(resolve => {
-      doc.addEventListener('DOMContentLoaded', () => {
-        const interval = setInterval(() => {
-          const ngDOMRenderMode = dom.window.ngDOMRenderMode as ngDOMRenderMode;
-          if (ngDOMRenderMode && typeof ngDOMRenderMode === 'object') {
-            // Wait until up is stable or limit reached.
-            clearInterval(interval);
-            resolve(ngDOMRenderMode);
-          }
-        }, 30);
-      });
+      const interval = setInterval(() => {
+        const ngDOMRenderMode = dom.window.ngDOMRenderMode as ngDOMRenderMode;
+        if (ngDOMRenderMode && typeof ngDOMRenderMode === 'object') {
+          // Wait until up is stable or limit reached.
+          clearInterval(interval);
+          resolve(ngDOMRenderMode);
+        }
+      }, 30);
     });
 
     await ngDOMRenderMode.getWhenStable();
