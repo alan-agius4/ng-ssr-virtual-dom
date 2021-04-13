@@ -87,7 +87,7 @@ app.get('*', (req, res, next) => {
       protocol: req.protocol,
       host: req.get('host'),
       pathname: req.path,
-      query: req.query as Record<string, any>,
+      query: req.query,
     }),
     headers: req.headers,
   })
